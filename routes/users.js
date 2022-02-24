@@ -9,7 +9,7 @@ const users = require('../controllers/users');
 // SHOW REGISTER FORM
 router.get('/register', users.renderRegisterForm);
 // REGISTER NEW USER
-router.post('/register', catchAsync(users.userRegister));
+router.post('/register', catchAsync(users.register));
 // SHOW LOGIN
 router.get('/login', users.renderLoginForm);
 // LOGIN ACTION

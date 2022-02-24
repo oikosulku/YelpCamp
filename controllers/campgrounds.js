@@ -18,10 +18,8 @@ module.exports.createCampground = async(req, res) => {
 }
 
 module.exports.showCampground = async(req, res) => {
-    
     // populate gives information from users and reviews databases 
     // bss review id and author id saved to campground database
-
     const campground = await Campground.findById(req.params.id).populate({
         path: 'reviews',
         populate: {
