@@ -4,6 +4,7 @@ const {campgroundSchema} = require('../schemas.js');
 const catchAsync = require('../utils/catchAsync');
 const ExpressError = require('../utils/ExpressError');
 const Campground = require('../models/campground');
+const {isLoggedIn} = require('../middleware');
 
 router.get('/', catchAsync(async(req, res, wait) => {
     const campgrounds = await Campground.find();
@@ -27,13 +28,13 @@ const validateCampground = (req, res, next) => {
 
 //
 // SHOW NEW CAMPGROUND FORM
-router.get('/new', (req, res) => {
+router.get('/new', isLoggedIn, (req, res) => {
     res.render('campgrounds/new');
 })
 
 //
 // MAKE A NEW CAMPGROUND POST ACTION
-router.post('/', validateCampground,catchAsync( async(req, res) => {
+router.post('/', isLoggedIn, validateCampground,catchAsync( async(req, res) => {
     //if(!req.body.campground) throw new ExpressError('Invalid Campground Data', 400 );
     const campground = new Campground(req.body.campground);
     await campground.save();
