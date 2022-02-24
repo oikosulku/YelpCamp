@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const {campgroundSchema} = require('../schemas.js');
 const catchAsync = require('../utils/catchAsync');
-const ExpressError = require('../utils/ExpressError');
+const {isLoggedIn, isAuthor, validateCampground} = require('../middleware');
+
 const Campground = require('../models/campground');
-const {isLoggedIn} = require('../middleware');
 
 router.get('/', catchAsync(async(req, res, wait) => {
     const campgrounds = await Campground.find();
@@ -15,16 +14,6 @@ router.get('/', catchAsync(async(req, res, wait) => {
 // pls note order...
 // "new" must be before ":id" - otherwise express thinks "new" is an id
 
-// Campground form validation...
-const validateCampground = (req, res, next) => {
-    const { error } = campgroundSchema.validate(req.body);
-    if(error) {
-        const msg = error.details.map(el => el.message).join(',');
-        throw new ExpressError(msg, 400);
-    } else {
-        next();
-    }
-}
 
 //
 // SHOW NEW CAMPGROUND FORM
@@ -44,7 +33,7 @@ router.post('/', isLoggedIn, validateCampground,catchAsync( async(req, res) => {
 }))
 
 // EDIT CAMPGROUND
-router.get('/:id/edit', catchAsync( async(req, res) => {
+router.get('/:id/edit', isLoggedIn, isAuthor, catchAsync( async(req, res) => {
     const campground = await Campground.findById(req.params.id);
     if(!campground) {
         req.flash('error', 'Cannot find that campground!');
@@ -53,9 +42,10 @@ router.get('/:id/edit', catchAsync( async(req, res) => {
     res.render('campgrounds/edit', {campground});
 }))
 
-// need method-override
+// UPDATE
+router.put('/:id', isLoggedIn, isAuthor, validateCampground, catchAsync( async(req, res) => {
+// PUT need method-override
 // remember -> form action="/campgrounds/<%=campground._id%>?_method=PUT" method="POST"
-router.put('/:id', validateCampground, catchAsync( async(req, res) => {
     const{ id } = req.params;
     const campground = await Campground.findByIdAndUpdate(id , {...req.body.campground});
     req.flash('success', 'Succesfully updated campground!!');
@@ -63,10 +53,9 @@ router.put('/:id', validateCampground, catchAsync( async(req, res) => {
 }))
 
 // DELETE
-
-// need method-override
+router.delete('/:id', isLoggedIn, isAuthor, catchAsync( async( req, res) => {
+// DELETYE need method-override
 // remember -> form action="/campgrounds/<%=campground._id%>?_method=DELETE" method="POST"
-router.delete('/:id', catchAsync( async( req, res) => {
     const{ id } = req.params;
     await Campground.findByIdAndDelete(id);
     req.flash('success', 'Campground deleted!');
@@ -78,7 +67,15 @@ router.get('/:id', catchAsync( async(req, res) => {
     
     // populate gives information from users and reviews databases 
     // bss review id and author id saved to campground database
-    const campground = await Campground.findById(req.params.id).populate('reviews').populate('author');
+
+    const campground = await Campground.findById(req.params.id).populate({
+        path: 'reviews',
+        populate: {
+            path: 'author'
+        }
+    }).populate('author');
+    console.log(campground.reviews);
+    //const campground = await Campground.findById(req.params.id).populate('reviews').populate('author');
     if(!campground) {
         req.flash('error', 'Cannot find that campground!');
         res.redirect('/campgrounds');
