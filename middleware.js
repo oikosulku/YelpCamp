@@ -18,6 +18,7 @@ module.exports.isLoggedIn = (req, res, next) => {
 
 // Campground form validation...
 module.exports.validateCampground = (req, res, next) => {
+    
     const { error } = campgroundSchema.validate(req.body);
     if(error) {
         const msg = error.details.map(el => el.message).join(',');
@@ -40,6 +41,7 @@ module.exports.isAuthor = async(req, res, next) => {
 
 // Review form validation...
 module.exports.validateReview = (req, res, next) => {
+    console.log(req.body);
     const { error } = reviewSchema.validate(req.body);
     if(error) {
         const msg = error.details.map(el => el.message).join(',');

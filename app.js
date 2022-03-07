@@ -1,19 +1,32 @@
-// require needed modules
+if(process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
+}
+
+// 
+//require needed depencies
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const session = require('express-session');
 const flash = require('connect-flash');
-const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
+
+//
+// Require models
 const User = require('./models/user');
+
+//
+// require utils & routes + other code
+const ExpressError = require('./utils/ExpressError');
+
 //const Campground = require('./models/campground');
 //const Review = require('./models/review');
 
-// ROUTES
+//
+// Require ROUTES
 const campgroundRoutes = require('./routes/campground');
 const reviewRoutes = require('./routes/reviews');
 const userRoutes = require('./routes/users');
